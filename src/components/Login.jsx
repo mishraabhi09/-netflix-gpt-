@@ -1,9 +1,41 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import Header from "./Header.jsx";
+import { checkValidEmail } from "../utils/validate.jsx"
+import { checkValidPassword } from "../utils/validate.jsx";
 
 const Login = () => {
 
     const [IsSignInForm, SetIsSignInForm] = useState(true);
+
+    const [emailerrmsg, setEmailErrorMsg] = useState();
+
+    const [passworderrmsg, setPasswordErrorMsg] = useState();
+
+    const email = useRef(null);
+
+    const password = useRef(null);
+
+    const handlesigninbutton = () => {
+
+        // validate the form data 
+
+        // These consoles only giving us the address of the email and password which fetched by useRef hook.
+        // // console.log(email);
+        // console.log(password);
+
+        // "email.current" -->> gives us the input data entered by the person and ".value" -->> gives the value of input box
+        // console.log(email.current.value);
+        // console.log(password.current.value);
+
+        const msgfrvalidEmail = checkValidEmail(email.current.value);
+        setEmailErrorMsg(msgfrvalidEmail ? null : "Please Enter a valid email");
+
+
+        const msgfrvalidPassword = checkValidPassword(password.current.value);
+        setPasswordErrorMsg(msgfrvalidPassword ? null : "please Enter correct password");
+
+
+    }
 
     const toggleSignIn = () => {
         SetIsSignInForm(!IsSignInForm);
@@ -22,7 +54,9 @@ const Login = () => {
 
             </div>
 
-            <form className=" w-1/3 absolute p-12 bg-black my-36 mx-auto right-0 left-0 bg-opacity-75 rounded-md">
+            <form onSubmit={(e) => { e.preventDefault() }}
+
+                className=" w-1/3 absolute p-12 bg-black my-36 mx-auto right-0 left-0 bg-opacity-75 rounded-md">
 
                 <p className="text-white text-4xl font-bold mx-8">
 
@@ -30,25 +64,62 @@ const Login = () => {
 
                 </p>
 
-                <input className="w-4/5 px-8 py-5 my-8 mx-9 rounded-md" type="text" placeholder="Enter your Email address" />
+                <input
 
-                <input className="w-4/5 px-8 py-5 my-2 mx-9 rounded-md" type="text" placeholder="Enter Password" />
 
-                <button className="w-4/5 px-8 py-3 my-2 mx-9 rounded-md bg-red-600" onClick = {handlesigninbutton}>
+                    ref={email}
+                    className="w-4/5 px-5 py-5 my-8 mx-9 rounded-md bg-black bg-opacity-50 text-white border border-zinc-600"
+                    type="text"
+                    placeholder="Enter your Email address"
+
+                />
+
+                <p className="text-red-600 mx-9"> {emailerrmsg} </p>
+
+                <input
+
+                    ref={password}
+                    className="w-4/5 px-5 py-5 my-2 mx-9 rounded-md bg-black bg-opacity-50 text-white border border-zinc-600"
+                    type="text"
+                    placeholder="Enter Password"
+
+                />
+
+                <p className="text-red-600 mx-9" >{passworderrmsg}</p>
+
+                <button
+
+                    className="w-4/5 px-8 py-3 my-2 mx-9 rounded-md bg-red-600"
+
+                    onClick={handlesigninbutton}>
 
                     {IsSignInForm ? "SignIn" : "Signup"}
 
                 </button>
 
-                <p className="text-gray-400 pl-48 pt-3 pb-3 text-xl font-semibold">OR</p>
+                <p
 
-                <button className="w-4/5 px-8 py-3 my-2 mx-9 rounded-md bg-white text-white font-semibold bg-opacity-25">
+                    className="text-gray-400 pl-48 pt-3 pb-3 text-xl font-semibold">
+
+                    OR
+
+                </p>
+
+                <button
+
+                    className="w-4/5 px-8 py-3 my-2 mx-9 rounded-md bg-white text-white font-semibold bg-opacity-25">
 
                     Use sign-in code
 
                 </button>
 
-                <p className="text-white text-lg px-32 pb-8">Forget password? </p>
+                <p
+
+                    className="text-white text-lg px-32 pb-8">
+
+                    Forget password?
+
+                </p>
 
                 <div className="signup_now flex px-9">
 
