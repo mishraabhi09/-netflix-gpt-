@@ -1,7 +1,15 @@
 import { useState, useRef } from "react"
-import Header from "./Header.jsx";
+import { useNavigate } from "react-router-dom";
 import { checkValidEmail } from "../utils/validate.jsx"
 import { checkValidPassword } from "../utils/validate.jsx";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../utils/firebase.jsx";
+import Header from "./Header.jsx";
+import { updateProfile } from "firebase/auth";
+import { addUser } from "../utils/userSlice.jsx";
+import { useDispatch } from "react-redux";
+
 
 const Login = () => {
 
@@ -11,11 +19,20 @@ const Login = () => {
 
     const [passworderrmsg, setPasswordErrorMsg] = useState();
 
+    const navigate = useNavigate();
+
     const email = useRef(null);
 
     const password = useRef(null);
 
+    const name = useRef(null);
+
+    const dispatch = useDispatch();
+
+
+
     const handlesigninbutton = () => {
+
 
         // validate the form data 
 
@@ -34,6 +51,82 @@ const Login = () => {
         const msgfrvalidPassword = checkValidPassword(password.current.value);
         setPasswordErrorMsg(msgfrvalidPassword ? null : "please Enter correct password");
 
+        if (!msgfrvalidEmail || !msgfrvalidPassword) return;
+
+        if (!IsSignInForm) {
+            // Sign up logic
+
+            createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
+                .then((userCredential) => {
+                    // Signed up 
+                    const user = userCredential.user;
+
+                    updateProfile(user, {
+
+                        displayName: name.current.value,
+                        photoURL: "https://example.com/jane-q-user/profile.jpg",
+                    })
+                        .then(() => {
+
+                            const { uid, email, displayname, photoURL } = auth.currentUser;
+
+                            dispatch(
+
+                                addUser(
+
+                                    {
+                                        uid: uid,
+                                        email: email,
+                                        displayname: displayname,
+                                        photoURL: photoURL
+
+                                    }));
+
+
+                            navigate("/Browse");
+
+
+
+                        })
+
+                        .catch((error) => {
+                            // An error occurred
+                            // ...
+                        });
+
+
+                })
+
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    console.log(errorCode);
+                    console.log(errorMessage);
+
+
+
+                });
+
+        }
+
+        else {
+            // sign in logic 
+
+            signInWithEmailAndPassword(auth, email.current.value, password.current.value)
+                .then((userCredential) => {
+                    // Signed in 
+                    const user = userCredential.user;
+
+                    navigate("/Browse");
+
+                })
+
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    // console.log(error.Code + "-" + error.Message);
+                });
+        }
 
     }
 
@@ -48,13 +141,16 @@ const Login = () => {
 
             <Header />
 
-            <div className="absolute  w-fit bg-gradient-to-b from-black">
+            <div className="absolute w-fit ">
 
                 <img src="https://assets.nflxext.com/ffe/siteui/vlv3/aa9edac4-a0e6-4f12-896e-32c518daec62/web/IN-en-20241223-TRIFECTA-perspective_1502c512-be5f-4f14-b21a-e3d75fe159ab_large.jpg" alt="Main_Image" />
 
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault() }}
+
+
+
+            <form onSubmit={(e) => e.preventDefault()}
 
                 className=" w-1/3 absolute p-12 bg-black my-36 mx-auto right-0 left-0 bg-opacity-75 rounded-md">
 
@@ -63,6 +159,18 @@ const Login = () => {
                     {IsSignInForm ? "SignIn" : "Signup"}
 
                 </p>
+
+                {!IsSignInForm && (<input
+
+                    ref={name}
+                    className="w-4/5 px-5 py-5 my-2 mx-9 rounded-md bg-black bg-opacity-50 text-white border border-zinc-600"
+                    type="text"
+                    placeholder="Enter your name"
+
+
+                />
+                )}
+
 
                 <input
 
@@ -74,7 +182,10 @@ const Login = () => {
 
                 />
 
+
                 <p className="text-red-600 mx-9"> {emailerrmsg} </p>
+
+
 
                 <input
 
@@ -86,6 +197,7 @@ const Login = () => {
                 />
 
                 <p className="text-red-600 mx-9" >{passworderrmsg}</p>
+
 
                 <button
 
